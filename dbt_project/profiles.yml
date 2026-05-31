@@ -1,0 +1,11 @@
+nyc_taxi_lakehouse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "../data/refined/nyc_taxi.duckdb"
+      threads: 4
+      extensions:
+        - parquet
+      plugins:
+        - module: dbt.adapters.duckdb.plugins.excel

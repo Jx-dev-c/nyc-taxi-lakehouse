@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: fct_trips
+    description: >
+      Tabela fato de corridas de táxi amarelo NYC.
+      Granularidade: 1 linha por corrida.
+      Materialização: table (performance de leitura).
+    columns:
+      - name: trip_id
+        description: "Surrogate key da corrida"
+        tests:
+          - unique
+          - not_null
+
+      - name: pickup_at
+        description: "Timestamp do embarque"
+        tests:
+          - not_null
+
+      - name: total_amount
+        description: "Valor total cobrado"
+        tests:
+          - not_null
+
+      - name: trip_duration_minutes
+        description: "Duração em minutos"
+        tests:
+          - not_null
+
+      - name: payment_type
+        description: "Tipo de pagamento legível"
+        tests:
+          - accepted_values:
+              values: ['credit_card', 'cash', 'no_charge', 'dispute', 'unknown', 'voided_trip', 'other']
+
+      - name: time_of_day
+        description: "Período do dia do embarque"
+        tests:
+          - accepted_values:
+              values: ['morning', 'afternoon', 'evening', 'late_night']
+
+      - name: distance_bucket
+        description: "Faixa de distância da corrida"
+        tests:
+          - accepted_values:
+              values: ['short', 'medium', 'long', 'very_long']
+
+  - name: mart_daily_summary
+    description: >
+      Agregação diária de corridas. Alimenta dashboards e análises de tendência.
+      Granularidade: 1 linha por dia.
+    columns:
+      - name: pickup_date
+        description: "Data da corrida"
+        tests:
+          - unique
+          - not_null
+
+      - name: total_trips
+        description: "Total de corridas no dia"
+        tests:
+          - not_null
+
+      - name: total_revenue
+        description: "Receita total do dia"
+        tests:
+          - not_null

@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: trusted
+    tables:
+      - name: yellow_tripdata_2023_01
+        meta:
+          external_location: "read_parquet('C:/Users/joaob/Downloads/nyc_taxi_lakehouse/data/trusted/yellow_tripdata_2023-01.parquet')"
+        columns:
+          - name: tpep_pickup_datetime
+            data_tests:
+              - not_null
+          - name: tpep_dropoff_datetime
+            data_tests:
+              - not_null
+          - name: passenger_count
+            data_tests:
+              - not_null
+          - name: trip_distance
+            data_tests:
+              - not_null
+          - name: total_amount
+            data_tests:
+              - not_null
+          - name: trip_duration_minutes
+            data_tests:
+              - not_null

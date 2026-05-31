@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: stg_yellow_trips
+    description: >
+      Staging de corridas de táxi amarelo NYC. Renomeação e padronização
+      de colunas da camada trusted. Sem regra de negócio aplicada.
+    columns:
+      - name: vendor_id
+        description: "ID do provedor de TPEP"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2]
+
+      - name: pickup_at
+        description: "Timestamp do embarque"
+        tests:
+          - not_null
+
+      - name: dropoff_at
+        description: "Timestamp do desembarque"
+        tests:
+          - not_null
+
+      - name: passenger_count
+        description: "Número de passageiros"
+        tests:
+          - not_null
+
+      - name: trip_distance
+        description: "Distância em milhas"
+        tests:
+          - not_null
+
+      - name: total_amount
+        description: "Valor total da corrida"
+        tests:
+          - not_null
+
+      - name: trip_duration_minutes
+        description: "Duração calculada em minutos"
+        tests:
+          - not_null
+
+      - name: payment_type_id
+        description: "Tipo de pagamento"
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6]
