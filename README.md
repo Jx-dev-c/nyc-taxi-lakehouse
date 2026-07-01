@@ -51,9 +51,11 @@ marts/
 
 ### 1. Ambiente Python
 
+Requer Python 3.12 (veja o motivo em [requirements.txt](requirements.txt)).
+
 ```bash
 # Windows
-python -m venv .venv
+py -3.12 -m venv .venv
 .venv\Scripts\activate
 
 pip install -r requirements.txt
@@ -62,7 +64,11 @@ pip install -r requirements.txt
 ### 2. Pipeline completo
 
 ```bash
+# Com o venv ativado
 python pipeline/run_pipeline.py
+
+# Ou sem ativar, chamando o interpretador do venv diretamente
+.venv\Scripts\python.exe pipeline/run_pipeline.py
 ```
 
 Isso executa em sequência:
@@ -150,5 +156,6 @@ nyc_taxi_lakehouse/
 │   ├── dbt_project.yml
 │   └── profiles.yml
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
