@@ -29,6 +29,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ingestion.ingest_raw import main as ingest_raw
 from pipeline.transform_trusted import main as transform_trusted
 
+# Evita mojibake em logs com acentos no console do Windows (cp1252 por padrão)
+sys.stdout.reconfigure(encoding="utf-8")
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -37,6 +40,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 DBT_PROJECT_PATH = Path(__file__).resolve().parents[1] / "dbt_project"
+DATA_REFINED_PATH = Path(__file__).resolve().parents[1] / "data" / "refined"
 
 
 def run_step(name: str, func) -> float:
@@ -55,10 +59,28 @@ def run_step(name: str, func) -> float:
         raise
 
 
-def run_dbt_command(command: list[str]) -> None:
+def resolve_dbt_executable() -> Path:
+    """Resolve o executável do dbt instalado no mesmo venv do Python em uso.
+
+    subprocess.run(["dbt", ...]) depende do PATH do processo e falha (WinError 2)
+    quando o pipeline roda com um interpretador Python diferente do venv onde o
+    dbt foi instalado (ex: python.exe global em vez de .venv\\Scripts\\python.exe).
+    """
+    dbt_name = "dbt.exe" if sys.platform == "win32" else "dbt"
+    dbt_path = Path(sys.executable).parent / dbt_name
+    if not dbt_path.exists():
+        raise FileNotFoundError(
+            f"dbt não encontrado em {dbt_path}. "
+            "Rode o pipeline com o Python do venv onde as dependências foram "
+            "instaladas (.venv\\Scripts\\python.exe pipeline\\run_pipeline.py)."
+        )
+    return dbt_path
+
+
+def run_dbt_command(subcommand: list[str]) -> None:
     """Executa um comando dbt via subprocess a partir do diretório do projeto."""
     result = subprocess.run(
-        command,
+        [str(resolve_dbt_executable()), *subcommand],
         cwd=DBT_PROJECT_PATH,
         capture_output=True,
         text=True,
@@ -83,16 +105,22 @@ def main() -> None:
     # Step 2: Transformação trusted
     timings["transform_trusted"] = run_step("transform_trusted", transform_trusted)
 
+    # DuckDB não cria o diretório do arquivo .duckdb sozinho: se "data/refined"
+    # não existir, o dbt falha com um UnicodeDecodeError enganoso (o adapter
+    # tenta decodificar como UTF-8 a mensagem de erro do Windows, que vem em
+    # português com acentos, em vez de reportar "caminho não encontrado").
+    DATA_REFINED_PATH.mkdir(parents=True, exist_ok=True)
+
     # Step 3: dbt run
     timings["dbt_run"] = run_step(
         "dbt_run",
-        lambda: run_dbt_command(["dbt", "run"]),
+        lambda: run_dbt_command(["run"]),
     )
 
     # Step 4: dbt test
     timings["dbt_test"] = run_step(
         "dbt_test",
-        lambda: run_dbt_command(["dbt", "test"]),
+        lambda: run_dbt_command(["test"]),
     )
 
     total = time.time() - pipeline_start
