@@ -1,0 +1,26 @@
+# Ambientes virtuais
+.venv/
+.venv-*/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Dados (camadas do lakehouse geradas pelo pipeline)
+data/
+
+# dbt
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+dbt_project/.user.yml
+
+# DuckDB
+*.duckdb
+*.duckdb.wal
+
+# IDE / OS
+.DS_Store
+Thumbs.db
